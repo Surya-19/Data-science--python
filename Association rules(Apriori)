@@ -1,0 +1,28 @@
+import pandas as pd
+import numpy as np
+from mlxtend.frequent_patterns import apriori, association_rules
+
+data = pd.read_csv('Online Retail.csv')
+
+france_basket = (data[data['Country'] == 'France'].groupby(['InvoiceNo','Description'])['Quantity'].sum().unstack().reset_index().fillna(0).set_index('InvoiceNo'))
+
+france_basket
+
+#hot encoding
+#its basically used to make columns more suitable for building models
+
+def hot_encode(x):
+    if (x <=0):
+        return 0
+    if (x >= 1):
+        return 1
+
+encoded = france_basket.map(hot_encode)
+
+france_basket = encoded
+france_basket
+
+frq_items = apriori(france_basket, min_support = 0.05, use_colnames = True)
+rules = association_rules(frq_items, metric = 'lift', min_threshold = 1)
+rules = rules.sort_values(['confidence','lift'],ascending = ['False','False'] )
+print(rules.head())
